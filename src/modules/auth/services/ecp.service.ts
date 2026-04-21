@@ -1,14 +1,18 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from "@nestjs/config";
+import { ENV_KEYS } from "src/core/config/env-keys";
 @Injectable()
 export class EcpService {
-  constructor(private readonly httpService: HttpService){}
+  constructor(
+    private readonly configService:ConfigService,
+    private readonly httpService: HttpService){}
 
  async verifyEcp(cms: string) {
-    const url = 'http://ncanode:14579/cms/verify'; 
+  const url = this.configService.getOrThrow<string>(ENV_KEYS.NCANODE_URL);
     
     try {
-      const response = await this.httpService.axiosRef.post(url, {
+      const response = await this.httpService.axiosRef.post(url+'/cms/verify', {
         cms: cms,
         checkOcsp: true, 
         checkCrl: false  
