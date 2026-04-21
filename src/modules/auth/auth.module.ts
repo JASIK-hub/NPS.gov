@@ -8,11 +8,14 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { OtpService } from './services/otp.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ENV_KEYS } from 'src/core/config/env-keys';
+import { EcpService } from './services/ecp.service';
+import { HttpModule, HttpService } from '@nestjs/axios';
 
 @Module({
   imports: [
     UserModule,
     RedisModule,
+    HttpModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,7 +28,7 @@ import { ENV_KEYS } from 'src/core/config/env-keys';
     }),
   ],
   controllers: [AuthController],
-  providers: [TokenService, AuthService, OtpService],
+  providers: [TokenService, AuthService, OtpService,EcpService],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}

@@ -1,5 +1,7 @@
+import { OrganizationEntity } from './../../../core/db/entities/organization.entity';
 import {
   BadRequestException,
+  Body,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -18,6 +20,10 @@ import { Resend } from 'resend';
 import { OtpService } from './otp.service';
 import { otpEmailTemplate } from 'src/core/common/email/templates/otp-email.template';
 import { CodeMessageDto } from '../dtos/code-message.dto';
+import { LoginEcpDto } from '../dtos/login-ecp.dto';
+import { EcpService } from './ecp.service';
+import { OrganizationService } from 'src/modules/user/services/organization.service';
+import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,6 +31,8 @@ export class AuthService {
     private configService: ConfigService,
     private tokenService: TokenService,
     private otpService: OtpService,
+    private ecpService:EcpService,
+    private organizationService:OrganizationService
   ) {}
 
   async registerUser(body: RegisterUserDto): Promise<TokenResponseDto> {
@@ -95,6 +103,46 @@ export class AuthService {
       throw new InternalServerErrorException('Error while sending code');
     }
     return { message: 'code sent' };
+  }
+
+  async loginWithEcp(body: LoginEcpDto) {
+    if(!body.bin){
+      throw new BadRequestException('BIIN value is missing')
+    }
+
+    const ecpData = await this.ecpService.verifyEcp(body.cms);
+    const { iin, bin, organizationName, firstName, lastName } = ecpData;
+
+    let organization: OrganizationEntity | null = null;
+    if (body.bin !== bin) {
+      throw new BadRequestException('BIIN does not match');
+    }
+
+    organization = await this.organizationService.findOne({ where: { bin } });
+    
+    if (!organization) {
+      organization = await this.organizationService.createOne({
+        bin: bin,
+        name: organizationName,
+      });
+    }
+    
+    let user = await this.userService.findOne({ where: { iin } });
+
+    if (!user) {
+      user = await this.userService.createOne({
+        iin: iin,
+        firstName: firstName,
+        lastName: lastName,
+        role: UserRoles.ADMIN,
+        organization: organization? organization : undefined 
+      });
+    }
+
+    return await this.tokenService.generateTokens({
+      id: user.id,
+      role: user.role,
+    });
   }
 
   private async hashPassword(password: string): Promise<string> {

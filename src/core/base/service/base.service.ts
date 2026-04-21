@@ -1,4 +1,5 @@
 import {
+  DeepPartial,
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
@@ -22,5 +23,9 @@ export class BaseService<T extends { id: number }> {
 
   async count(options: FindManyOptions<T>): Promise<number> {
     return await this.repository.count(options);
+  }
+
+  async createOne(entity:DeepPartial<T>):Promise<T>{
+    return this.repository.create(entity)
   }
 }

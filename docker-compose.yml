@@ -22,6 +22,18 @@ services:
     volumes:
       - redis_data:/data
 
+  ncanode:
+    image: malikzh/ncanode:latest
+    container_name: ncanode_worker
+    restart: always
+    ports:
+      - "14579:14579"
+    environment:
+      - TZ=Asia/Almaty
+    volumes:
+      - ncanode_cache:/app/cache
+
 volumes:
   postgres_data:
   redis_data:
+  ncanode_cache:

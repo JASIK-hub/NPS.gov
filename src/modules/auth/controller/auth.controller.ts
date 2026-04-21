@@ -6,6 +6,7 @@ import { RegisterUserDto } from '../dtos/register-user.dto';
 import { LoginUserDto } from '../dtos/login-user.dto';
 import { LoginCodeDto } from '../dtos/login-code.dto';
 import { CodeMessageDto } from '../dtos/code-message.dto';
+import { LoginEcpDto } from '../dtos/login-ecp.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -13,13 +14,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('registration')
-  @ApiOperation({ summary: 'User registration via email/password' })
+  @ApiOperation({ summary: 'User registration' })
   @ApiResponse({
     status: 201,
     type: TokenResponseDto,
   })
   async register(@Body() body: RegisterUserDto): Promise<TokenResponseDto> {
-    return await this.authService.registerUser(body);
+    return this.authService.registerUser(body);
   }
 
   @Post('login')
@@ -34,7 +35,7 @@ export class AuthController {
   })
   @ApiBody({ type: LoginCodeDto })
   async login(@Body() body: LoginCodeDto): Promise<TokenResponseDto> {
-    return await this.authService.loginUser(body);
+    return this.authService.loginUser(body);
   }
 
   @Post('code')
@@ -45,7 +46,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiResponse({ status: 200, type: CodeMessageDto })
   async sendCode(@Body() body: LoginUserDto): Promise<CodeMessageDto> {
-    return await this.authService.sendCode(body);
+    return this.authService.sendCode(body);
   }
 
   @Get(':id')
@@ -57,6 +58,19 @@ export class AuthController {
     type: TokenResponseDto,
   })
   async getTokens(@Param('id') id: number): Promise<TokenResponseDto> {
-    return await this.authService.getTokensForDev(id);
+    return this.authService.getTokensForDev(id);
   }
+
+  @Post('login/ecp')
+  @ApiOperation({
+    summary: 'Login using ECP',
+  })
+  @ApiResponse({
+    status: 200,
+    type: TokenResponseDto,
+  })
+  async loginWithEcp(@Body() body:LoginEcpDto){
+    return this.authService.loginWithEcp(body)
+  }
+
 }
