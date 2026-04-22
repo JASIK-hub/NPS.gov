@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TokenResponseDto } from '../dtos/token-response.dto';
@@ -7,6 +15,7 @@ import { LoginUserDto } from '../dtos/login-user.dto';
 import { LoginCodeDto } from '../dtos/login-code.dto';
 import { CodeMessageDto } from '../dtos/code-message.dto';
 import { LoginEcpDto } from '../dtos/login-ecp.dto';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -49,16 +58,18 @@ export class AuthController {
     return this.authService.sendCode(body);
   }
 
-  @Get(':id')
+  @Post('log-out')
   @ApiOperation({
-    summary: 'Get user tokens (for dev environment)',
+    summary: 'LogOut from session',
   })
-  @ApiResponse({
-    status: 200,
-    type: TokenResponseDto,
-  })
-  async getTokens(@Param('id') id: number): Promise<TokenResponseDto> {
-    return this.authService.getTokensForDev(id);
+  @HttpCode(200)
+  async logOut(
+    @Req() req: any,
+    @CurrentUser('id') userId: number,
+  ): Promise<void> {
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(' ')[1];
+    await this.authService.logOut(token, userId);
   }
 
   @Post('login/ecp')
@@ -69,8 +80,7 @@ export class AuthController {
     status: 200,
     type: TokenResponseDto,
   })
-  async loginWithEcp(@Body() body:LoginEcpDto){
-    return this.authService.loginWithEcp(body)
+  async loginWithEcp(@Body() body: LoginEcpDto) {
+    return this.authService.loginWithEcp(body);
   }
-
 }

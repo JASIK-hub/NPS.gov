@@ -31,8 +31,8 @@ export class AuthService {
     private configService: ConfigService,
     private tokenService: TokenService,
     private otpService: OtpService,
-    private ecpService:EcpService,
-    private organizationService:OrganizationService
+    private ecpService: EcpService,
+    private organizationService: OrganizationService,
   ) {}
 
   async registerUser(body: RegisterUserDto): Promise<TokenResponseDto> {
@@ -65,6 +65,10 @@ export class AuthService {
       id: user.id,
       role: user.role,
     });
+  }
+
+  async logOut(token: string, id: number): Promise<void> {
+    await this.tokenService.logOutSession(token, id);
   }
 
   async loginUser(body: LoginCodeDto): Promise<TokenResponseDto> {
@@ -106,8 +110,8 @@ export class AuthService {
   }
 
   async loginWithEcp(body: LoginEcpDto) {
-    if(!body.bin){
-      throw new BadRequestException('BIIN value is missing')
+    if (!body.bin) {
+      throw new BadRequestException('BIIN value is missing');
     }
 
     const ecpData = await this.ecpService.verifyEcp(body.cms);
@@ -119,14 +123,14 @@ export class AuthService {
     }
 
     organization = await this.organizationService.findOne({ where: { bin } });
-    
+
     if (!organization) {
       organization = await this.organizationService.createOne({
         bin: bin,
         name: organizationName,
       });
     }
-    
+
     let user = await this.userService.findOne({ where: { iin } });
 
     if (!user) {
@@ -135,7 +139,7 @@ export class AuthService {
         firstName: firstName,
         lastName: lastName,
         role: UserRoles.ADMIN,
-        organization: organization? organization : undefined 
+        organization: organization ? organization : undefined,
       });
     }
 

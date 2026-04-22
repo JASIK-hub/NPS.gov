@@ -47,6 +47,22 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  async logOutSession(token: string, userId: number): Promise<void> {
+    const decoded = this.jwtService.decode(token) as any;
+    const now = Math.floor(Date.now() / 1000);
+    const ttl = decoded.exp - now;
+
+    if (ttl > 0) {
+      await this.setTokenToBlackList(token, ttl);
+    }
+    const key = `refresh_token:${userId}`;
+    await this.redis.del(key);
+  }
+
+  private async setTokenToBlackList(token: string, ttl: number) {
+    await this.redis.set(`blackList:${token}`, 'true', 'EX', ttl);
+  }
+
   async validateToken(token: string) {
     const decoded = await this.jwtService.verify(token);
     if (!decoded) {
