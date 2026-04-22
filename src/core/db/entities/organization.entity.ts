@@ -1,26 +1,36 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { UserEntity } from "./user.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserEntity } from './user.entity';
+import { SurveyEntity } from './survey.entity';
 
 @Entity('organization')
-export class OrganizationEntity{
-    
-    @ApiProperty()
-    @PrimaryGeneratedColumn()
-    id:number
-    
-    @ApiProperty()
-    @CreateDateColumn()
-    createdAt: Date;
+export class OrganizationEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @ApiProperty()
-    @Column({ unique: true, length: 12 })
-    bin: string;
+  @ApiProperty()
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @ApiProperty()
-    @Column({ nullable: true })
-    name: string; 
+  @ApiProperty()
+  @Column({ unique: true, length: 12 })
+  bin: string;
 
-    @OneToMany(() => UserEntity, (user) => user.organization)
-    users: UserEntity[]
+  @ApiProperty()
+  @Column({ nullable: true })
+  name: string;
+
+  @ApiProperty()
+  @OneToMany(() => UserEntity, (user) => user.organization)
+  users: UserEntity[];
+
+  @ApiProperty()
+  @OneToMany(() => SurveyEntity, (survey) => survey.organization)
+  survey: SurveyEntity[];
 }
