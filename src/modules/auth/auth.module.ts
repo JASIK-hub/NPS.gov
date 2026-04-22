@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ENV_KEYS } from 'src/core/config/env-keys';
 import { EcpService } from './services/ecp.service';
 import { HttpModule, HttpService } from '@nestjs/axios';
+import { AuthDevController } from './controller/auth-dev.controller';
 
 @Module({
   imports: [
@@ -27,8 +28,8 @@ import { HttpModule, HttpService } from '@nestjs/axios';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [TokenService, AuthService, OtpService,EcpService],
+  controllers: [AuthController, AuthDevController],
+  providers: [TokenService, AuthService, OtpService, EcpService],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}

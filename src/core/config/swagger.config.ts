@@ -19,7 +19,6 @@ export function SwaggerConfig(app: INestApplication): void {
     .build();
 
   const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
-  document.security = [{ Authorization: [] }];
 
   SwaggerModule.setup('/docs', app, document, {
     customSiteTitle: 'NPS.gov API Docs',

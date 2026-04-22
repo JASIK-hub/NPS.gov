@@ -6,9 +6,16 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TokenResponseDto } from '../dtos/token-response.dto';
 import { RegisterUserDto } from '../dtos/register-user.dto';
 import { LoginUserDto } from '../dtos/login-user.dto';
@@ -16,12 +23,14 @@ import { LoginCodeDto } from '../dtos/login-code.dto';
 import { CodeMessageDto } from '../dtos/code-message.dto';
 import { LoginEcpDto } from '../dtos/login-ecp.dto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('registration')
   @ApiOperation({ summary: 'User registration' })
   @ApiResponse({
@@ -32,6 +41,7 @@ export class AuthController {
     return this.authService.registerUser(body);
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({
     summary: 'User login with code',
@@ -47,6 +57,7 @@ export class AuthController {
     return this.authService.loginUser(body);
   }
 
+  @Public()
   @Post('code')
   @ApiOperation({
     summary: 'Get code using email ',
@@ -58,6 +69,7 @@ export class AuthController {
     return this.authService.sendCode(body);
   }
 
+  @ApiBearerAuth()
   @Post('log-out')
   @ApiOperation({
     summary: 'LogOut from session',
@@ -72,6 +84,7 @@ export class AuthController {
     await this.authService.logOut(token, userId);
   }
 
+  @Public()
   @Post('login/ecp')
   @ApiOperation({
     summary: 'Login using ECP',

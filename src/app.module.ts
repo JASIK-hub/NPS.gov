@@ -3,7 +3,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { DatabaseModule } from './core/db/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
-import { AuthMiddleware } from './core/middleware/auth.middleware';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './core/guards/public.guard';
 
 @Module({
   imports: [
@@ -12,9 +13,11 @@ import { AuthMiddleware } from './core/middleware/auth.middleware';
     AuthModule,
     UserModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).exclude('auth/(.*)').forRoutes('*');
-  }
-}
+export class AppModule {}

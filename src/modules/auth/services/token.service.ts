@@ -64,10 +64,17 @@ export class TokenService {
   }
 
   async validateToken(token: string) {
+    const isRevoked = await this.redis.get(`blackList:${token}`);
+
+    if (isRevoked) {
+      throw new UnauthorizedException('Token has been revoked');
+    }
+
     const decoded = await this.jwtService.verify(token);
     if (!decoded) {
       throw new UnauthorizedException('Invalid token');
     }
+
     if (decoded.type != 'access') {
       throw new UnauthorizedException('Invalid token type');
     }
