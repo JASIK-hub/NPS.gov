@@ -25,6 +25,4 @@ export class UserService extends BaseService<UserEntity> {
     });
     return await this.userRepository.save(user);
   }
-
-  async createUserWithEcp(){}
 }

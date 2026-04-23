@@ -5,10 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OrganizationEntity } from './organization.entity';
 import { RegionEntity } from './region.entity';
+import { VoteEntity } from './vote.entity';
+import { OptionEntity } from './option.entity';
 
 @Entity('survey')
 export class SurveyEntity {
@@ -32,6 +35,14 @@ export class SurveyEntity {
   @JoinColumn({ name: 'organization_id' })
   organization: OrganizationEntity;
 
+  @ApiProperty()
+  @OneToMany(() => VoteEntity, (vote) => vote.survey)
+  vote: VoteEntity[];
+
+  @ApiProperty()
+  @OneToMany(() => OptionEntity, (option) => option.survey)
+  options: OptionEntity[];
+
   @ApiPropertyOptional({ type: () => RegionEntity })
   @ManyToOne(() => RegionEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'region_id' })
@@ -47,5 +58,5 @@ export class SurveyEntity {
 
   @ApiProperty()
   @Column({ type: 'boolean', default: true })
-  status: boolean;
+  isActive: boolean;
 }

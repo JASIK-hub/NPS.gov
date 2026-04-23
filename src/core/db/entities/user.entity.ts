@@ -2,8 +2,17 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { UserGender } from 'src/modules/user/enums/user-gender.enum';
 import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { OrganizationEntity } from './organization.entity';
+import { SurveyEntity } from './survey.entity';
+import { VoteEntity } from './vote.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -26,21 +35,26 @@ export class UserEntity {
   @Column({ type: 'varchar', nullable: true })
   middleName?: string;
 
+  @ApiProperty()
   @ManyToOne(() => OrganizationEntity, (org) => org.users, { nullable: true })
   @JoinColumn({ name: 'organization_id' })
   organization?: OrganizationEntity;
 
   @ApiProperty()
-  @Column({ type: 'date', nullable: true })
-  birthday?:Date
+  @OneToMany(() => VoteEntity, (vote) => vote.user)
+  vote: VoteEntity[];
 
   @ApiProperty()
-  @Column({ type: 'enum',enum:UserGender, nullable: true })
-  gender:UserGender
+  @Column({ type: 'date', nullable: true })
+  birthday?: Date;
+
+  @ApiProperty()
+  @Column({ type: 'enum', enum: UserGender, nullable: true })
+  gender: UserGender;
 
   @ApiPropertyOptional()
   @Exclude()
-  @Column({ type: 'text',nullable:true })
+  @Column({ type: 'text', nullable: true })
   password?: string;
 
   @ApiPropertyOptional()
