@@ -59,6 +59,10 @@ export class SurveyEntity {
 
   @ApiProperty()
   @Column({ type: 'date' })
+  startDate: string;
+
+  @ApiProperty()
+  @Column({ type: 'date' })
   validUntil: Date;
 
   @ApiProperty()

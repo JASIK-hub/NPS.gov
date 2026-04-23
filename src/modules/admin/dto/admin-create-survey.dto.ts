@@ -37,6 +37,10 @@ export class AdminCreateSurveyDto {
 
   @ApiProperty({ example: '2026-12-31' })
   @IsDateString()
+  startDate: string;
+
+  @ApiProperty({ example: '2026-12-31' })
+  @IsDateString()
   validUntil: string;
 
   @ApiProperty({

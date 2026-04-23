@@ -25,6 +25,7 @@ export class AdminService {
       },
       validUntil: body.validUntil,
       type: body.type,
+      startDate: body.startDate,
       options: body.options.map((text) => ({ title: text })),
     });
     const created = await this.surveyService.save(createBody);
