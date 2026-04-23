@@ -8,5 +8,6 @@ import { SurveryService } from './services/survey.service';
 @Module({
   imports: [TypeOrmModule.forFeature([VoteEntity, SurveyEntity])],
   providers: [VoteService, SurveryService],
+  exports: [VoteService, SurveryService],
 })
 export class SurveyModule {}

@@ -12,6 +12,7 @@ import { OrganizationEntity } from './organization.entity';
 import { RegionEntity } from './region.entity';
 import { VoteEntity } from './vote.entity';
 import { OptionEntity } from './option.entity';
+import { SurveyType } from 'src/modules/survey/enums/survey-type.enum';
 
 @Entity('survey')
 export class SurveyEntity {
@@ -35,20 +36,24 @@ export class SurveyEntity {
   @JoinColumn({ name: 'organization_id' })
   organization: OrganizationEntity;
 
-  @ApiProperty()
-  @OneToMany(() => VoteEntity, (vote) => vote.survey)
-  vote: VoteEntity[];
+  @ApiPropertyOptional()
+  @OneToMany(() => VoteEntity, (vote) => vote.survey, { nullable: true })
+  vote?: VoteEntity[];
 
   @ApiProperty()
   @OneToMany(() => OptionEntity, (option) => option.survey)
   options: OptionEntity[];
+
+  @ApiProperty({ enum: SurveyType })
+  @Column({ type: 'enum', enum: SurveyType })
+  type: SurveyType;
 
   @ApiPropertyOptional({ type: () => RegionEntity })
   @ManyToOne(() => RegionEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'region_id' })
   region: RegionEntity | null;
 
-  @ApiProperty({})
+  @ApiProperty()
   @Column({ type: 'integer', default: 0 })
   votedCount: number;
 
