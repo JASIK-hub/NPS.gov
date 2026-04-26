@@ -69,7 +69,7 @@ export class AuthController {
     return this.authService.sendCode(body);
   }
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('Authorization')
   @Post('log-out')
   @ApiOperation({
     summary: 'LogOut from session',

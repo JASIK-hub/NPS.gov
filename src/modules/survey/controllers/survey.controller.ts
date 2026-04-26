@@ -14,17 +14,17 @@ import {
 } from '@nestjs/swagger';
 import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
-import { SurveryService } from '../services/survey.service';
+import { SurveyService } from '../services/survey.service';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
 
-@ApiTags('survey')
+@ApiTags('Survey')
 @Controller('survey')
 export class SurveyController {
-  constructor(private readonly surveyService: SurveryService) {}
+  constructor(private readonly surveyService: SurveyService) {}
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('Authorization')
   @Get()
-  @ApiOperation({ summary: 'Get survey list' })
+  @ApiOperation({ summary: 'Get user voted survey list ' })
   async getSurveys(
     @CurrentUser('id') userId: number,
     @Query() query: SurveyActiveQueryDto,
@@ -32,7 +32,7 @@ export class SurveyController {
     return this.surveyService.getSurveyList(userId, query);
   }
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('Authorization')
   @Get(':id')
   @ApiOperation({ summary: 'Get survey by Id' })
   async getSurvey(
@@ -41,7 +41,7 @@ export class SurveyController {
     return this.surveyService.getSurvey(id);
   }
 
-  @ApiBearerAuth()
+  @ApiBearerAuth('Authorization')
   @Post(':id/vote')
   @ApiQuery({
     name: 'optionId',

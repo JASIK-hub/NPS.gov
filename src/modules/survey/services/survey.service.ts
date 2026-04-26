@@ -13,7 +13,7 @@ import { UserService } from 'src/modules/user/services/user.service';
 import { VoteService } from 'src/modules/survey/services/vote.service';
 
 @Injectable()
-export class SurveryService extends BaseService<SurveyEntity> {
+export class SurveyService extends BaseService<SurveyEntity> {
   constructor(
     @InjectRepository(SurveyEntity)
     private surveyRepository: Repository<SurveyEntity>,
@@ -45,7 +45,7 @@ export class SurveryService extends BaseService<SurveyEntity> {
   async getSurvey(id: number) {
     const survey = await this.surveyRepository.findOne({
       where: { id },
-      relations: ['vote,options'],
+      relations: ['vote', 'options'],
     });
     if (!survey) {
       throw new NotFoundException('Survey not found');

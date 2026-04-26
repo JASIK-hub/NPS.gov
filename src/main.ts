@@ -15,6 +15,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.enableCors();
   SwaggerConfig(app);
 
   await app.listen(process.env.PORT ?? 3000);

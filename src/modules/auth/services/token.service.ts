@@ -70,15 +70,19 @@ export class TokenService {
       throw new UnauthorizedException('Token has been revoked');
     }
 
-    const decoded = await this.jwtService.verify(token);
-    if (!decoded) {
-      throw new UnauthorizedException('Invalid token');
-    }
+    try {
+      const decoded = await this.jwtService.verify(token);
 
-    if (decoded.type != 'access') {
-      throw new UnauthorizedException('Invalid token type');
+      if (decoded.type !== 'access') {
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      return decoded;
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token has expired');
+      }
     }
-    return decoded;
   }
 
   private async setRefreshToRedis(

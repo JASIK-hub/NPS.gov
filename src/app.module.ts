@@ -5,6 +5,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './core/guards/public.guard';
+import { SurveyModule } from './modules/survey/survey.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { JwtAuthGuard } from './core/guards/public.guard';
     DatabaseModule,
     AuthModule,
     UserModule,
+    SurveyModule,
+    AdminModule,
   ],
   providers: [
     {
