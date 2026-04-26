@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
 import { VoteEntity } from 'src/core/db/entities/vote.entity';
@@ -19,7 +19,7 @@ import { OptionEntity } from 'src/core/db/entities/option.entity';
       RegionEntity,
       OptionEntity,
     ]),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [SurveyController],
   providers: [VoteService, SurveyService, OptionService, RegionService],

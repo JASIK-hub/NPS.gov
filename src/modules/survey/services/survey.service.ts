@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -17,13 +18,14 @@ export class SurveyService extends BaseService<SurveyEntity> {
   constructor(
     @InjectRepository(SurveyEntity)
     private surveyRepository: Repository<SurveyEntity>,
+    @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private voteService: VoteService,
   ) {
     super(surveyRepository);
   }
 
-  async getSurveyList(
+  async getUserSurveyList(
     id: number,
     query: SurveyActiveQueryDto,
   ): Promise<SurveyEntity[]> {
@@ -42,10 +44,19 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return userSurveys;
   }
 
+  async getSurveyList(query: SurveyActiveQueryDto) {
+    const surveys = await this.surveyRepository.find({
+      where: {
+        isActive: query.isActive,
+      },
+    });
+    return surveys;
+  }
+
   async getSurvey(id: number) {
     const survey = await this.surveyRepository.findOne({
       where: { id },
-      relations: ['vote', 'options'],
+      relations: ['vote', 'vote.user', 'options'],
     });
     if (!survey) {
       throw new NotFoundException('Survey not found');

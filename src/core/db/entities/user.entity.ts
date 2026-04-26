@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { UserGender } from 'src/modules/user/enums/user-gender.enum';
 import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
 import {
@@ -19,6 +19,8 @@ export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Exclude()
+  @Expose({ groups: ['profile'] })
   @ApiProperty({ description: 'ИИН или БИН' })
   @Column({ type: 'varchar', length: 12, unique: true, nullable: true })
   iin?: string;
@@ -69,6 +71,7 @@ export class UserEntity {
   @Column({ type: 'enum', enum: UserRoles, default: UserRoles.USER })
   role?: UserRoles;
 
+  @Exclude()
   @Column({ type: 'text', nullable: true })
   certificateThumbprint?: string;
 }

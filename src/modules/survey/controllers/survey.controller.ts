@@ -16,20 +16,20 @@ import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { SurveyService } from '../services/survey.service';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @ApiTags('Survey')
 @Controller('survey')
 export class SurveyController {
   constructor(private readonly surveyService: SurveyService) {}
 
-  @ApiBearerAuth('Authorization')
+  @Public()
   @Get()
-  @ApiOperation({ summary: 'Get user voted survey list ' })
+  @ApiOperation({ summary: 'Get survey list' })
   async getSurveys(
-    @CurrentUser('id') userId: number,
     @Query() query: SurveyActiveQueryDto,
   ): Promise<SurveyEntity[]> {
-    return this.surveyService.getSurveyList(userId, query);
+    return this.surveyService.getSurveyList(query);
   }
 
   @ApiBearerAuth('Authorization')
