@@ -10,6 +10,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
@@ -17,11 +18,23 @@ import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { SurveyService } from '../services/survey.service';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
 import { Public } from 'src/core/decorators/public.decorator';
+import { SurveyType } from '../enums/survey-type.enum';
 
 @ApiTags('Survey')
 @Controller('survey')
 export class SurveyController {
   constructor(private readonly surveyService: SurveyService) {}
+
+  @Public()
+  @Get('type')
+  @ApiOperation({ summary: 'Get available survey types' })
+  @ApiResponse({
+    type: [String],
+    status: 200,
+  })
+  async getTypes() {
+    return Object.values(SurveyType);
+  }
 
   @Public()
   @Get()
