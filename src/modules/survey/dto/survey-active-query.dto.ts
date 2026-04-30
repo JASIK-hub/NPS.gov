@@ -5,5 +5,5 @@ export class SurveyActiveQueryDto {
   @ApiPropertyOptional({ default: true })
   @IsBoolean()
   @IsOptional()
-  isActive: boolean;
+  isActive?: boolean;
 }
