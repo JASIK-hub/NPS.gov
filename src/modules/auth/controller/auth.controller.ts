@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { TokenResponseDto } from '../dtos/token-response.dto';
 import { RegisterUserDto } from '../dtos/register-user.dto';
-import { LoginUserDto } from '../dtos/login-user.dto';
+import { LoginEmailDto, LoginPasswordDto } from '../dtos/login-user.dto';
 import { LoginCodeDto } from '../dtos/login-code.dto';
 import { CodeMessageDto } from '../dtos/code-message.dto';
 import { LoginEcpDto } from '../dtos/login-ecp.dto';
@@ -42,7 +42,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('login')
+  @Post('login/code')
   @ApiOperation({
     summary: 'User login with code',
     description: 'User logins using 4 digit code sent to mail',
@@ -53,21 +53,32 @@ export class AuthController {
     type: TokenResponseDto,
   })
   @ApiBody({ type: LoginCodeDto })
-  async login(@Body() body: LoginCodeDto): Promise<TokenResponseDto> {
-    return this.authService.loginUser(body);
+  async loginWithCode(@Body() body: LoginCodeDto): Promise<TokenResponseDto> {
+    return this.authService.loginWithCode(body);
   }
 
   @Public()
-  @Post('code')
+  @Post('send-code')
   @ApiOperation({
     summary: 'Get code using email ',
     description: 'User enters email to receive 4 digit code',
   })
   @HttpCode(200)
   @ApiResponse({ status: 200, type: CodeMessageDto })
-  async sendCode(@Body() body: LoginUserDto): Promise<CodeMessageDto> {
+  async sendCode(@Body() body: LoginEmailDto): Promise<CodeMessageDto> {
     return this.authService.sendCode(body);
   }
+
+  @Public()
+  @Post('login/password')
+  @ApiOperation({
+    summary: 'Login with email, password',
+  })
+  @HttpCode(200)
+  async loginWithEmail(@Body() body: LoginPasswordDto): Promise<TokenResponseDto>{
+    return this.authService.loginWithPassword(body);
+  }
+
 
   @ApiBearerAuth('Authorization')
   @Post('log-out')

@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { TokenService } from './token.service';
 import { TokenResponseDto } from '../dtos/token-response.dto';
 import { RegisterUserDto } from '../dtos/register-user.dto';
-import { LoginUserDto } from '../dtos/login-user.dto';
+import { LoginPasswordDto,LoginEmailDto} from '../dtos/login-user.dto';
 import { LoginCodeDto } from '../dtos/login-code.dto';
 import { Resend } from 'resend';
 import { OtpService } from './otp.service';
@@ -71,7 +71,27 @@ export class AuthService {
     await this.tokenService.logOutSession(token, id);
   }
 
-  async loginUser(body: LoginCodeDto): Promise<TokenResponseDto> {
+  async loginWithPassword(body: LoginPasswordDto): Promise<TokenResponseDto> {
+    const user = await this.userService.findOne({
+      where: { email: body.email },
+      select:['password']
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if(!user.password){
+      throw new BadRequestException('You do not have password in your profile')
+    }
+    const isPasswordMatching = bcrypt.compare(body.password, user.password);
+    if (!isPasswordMatching) {
+      throw new BadRequestException('Incorrect password');
+    }
+
+    return this.tokenService.generateTokens(user);
+  }
+
+  async loginWithCode(body: LoginCodeDto): Promise<TokenResponseDto> {
     const user = await this.userService.findOne({
       where: {
         email: body.email,
@@ -91,7 +111,7 @@ export class AuthService {
     });
   }
 
-  async sendCode(body: LoginUserDto): Promise<CodeMessageDto> {
+  async sendCode(body: LoginEmailDto): Promise<CodeMessageDto> {
     const resendApiKey = this.configService.get<string>(
       ENV_KEYS.RESEND_API_KEY,
     );
