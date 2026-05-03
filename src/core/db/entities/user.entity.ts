@@ -52,7 +52,7 @@ export class UserEntity {
 
   @ApiProperty()
   @Column({ type: 'enum', enum: UserGender, nullable: true })
-  gender: UserGender;
+  gender: UserGender | null;
 
   @ApiPropertyOptional()
   @Exclude()
@@ -70,8 +70,4 @@ export class UserEntity {
   @ApiProperty({ enum: UserRoles })
   @Column({ type: 'enum', enum: UserRoles, default: UserRoles.USER })
   role?: UserRoles;
-
-  @Exclude()
-  @Column({ type: 'text', nullable: true })
-  certificateThumbprint?: string;
 }
