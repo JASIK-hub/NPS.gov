@@ -32,6 +32,10 @@ export class SurveyEntity {
   description: string;
 
   @ApiProperty()
+  @Column({ type: 'text' })
+  subTitle: string;
+
+  @ApiProperty()
   @ManyToOne(() => OrganizationEntity, (org) => org.survey)
   @JoinColumn({ name: 'organization_id' })
   organization: OrganizationEntity;

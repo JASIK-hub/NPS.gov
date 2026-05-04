@@ -13,6 +13,8 @@ import { RegionEntity } from 'src/core/db/entities/region.entity';
 import { DataSource } from 'typeorm';
 import { OptionEntity } from 'src/core/db/entities/option.entity';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
+import { UserService } from 'src/modules/user/services/user.service';
+import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
 
 @Injectable()
 export class AdminService {
@@ -20,10 +22,17 @@ export class AdminService {
     private surveyService: SurveyService,
     private optionService: OptionService,
     private regionService: RegionService,
+    private userService: UserService,
     private dataSource: DataSource,
   ) {}
 
-  async createSurvey(body: AdminCreateSurveyDto) {
+  async createSurvey(body: AdminCreateSurveyDto, userId: number) {
+    const user = await this.userService.findOne({
+      where: { id: userId },
+    });
+    if (user?.role !== UserRoles.ADMIN) {
+      throw new BadRequestException('Only admin can create survey');
+    }
     const existingSurvey = await this.surveyService.findOne({
       where: {
         title: body.title,
@@ -48,6 +57,7 @@ export class AdminService {
       title: body.title,
       description: body.description,
       validUntil: body.validUntil,
+      organization: user.organization,
       type: body.type,
       startDate: body.startDate,
       region,

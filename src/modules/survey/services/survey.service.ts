@@ -44,12 +44,12 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return userSurveys;
   }
 
-  async getSurveyList(isActive:boolean) {
+  async getSurveyList(isActive: boolean) {
     const surveys = await this.surveyRepository.find({
       where: {
         isActive: isActive,
       },
-      relations:['region']
+      relations: ['region', 'organization'],
     });
     return surveys;
   }
@@ -57,12 +57,12 @@ export class SurveyService extends BaseService<SurveyEntity> {
   async getSurvey(id: number) {
     const survey = await this.surveyRepository.findOne({
       where: { id },
-      relations: ['vote', 'vote.user', 'options','region'],
+      relations: ['vote', 'vote.user', 'options', 'region', 'organization'],
     });
     if (!survey) {
       throw new NotFoundException('Survey not found');
     }
-    
+
     return survey;
   }
 

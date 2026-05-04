@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { SurveyEntity } from './survey.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('organization')
 export class OrganizationEntity {
@@ -18,6 +19,7 @@ export class OrganizationEntity {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Exclude()
   @ApiProperty()
   @Column({ unique: true, length: 12 })
   bin: string;

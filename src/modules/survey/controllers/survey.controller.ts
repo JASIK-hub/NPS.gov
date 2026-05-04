@@ -40,16 +40,16 @@ export class SurveyController {
   @Get()
   @ApiOperation({ summary: 'Get survey list' })
   @ApiQuery({
-    name:'isActive',
-    type:Boolean
+    name: 'isActive',
+    type: Boolean,
   })
   async getSurveys(
-    @Query('isActive') isActive:boolean,
+    @Query('isActive') isActive: boolean,
   ): Promise<SurveyEntity[]> {
     return this.surveyService.getSurveyList(isActive);
   }
 
-  @ApiBearerAuth('Authorization')
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get survey by Id' })
   async getSurvey(
