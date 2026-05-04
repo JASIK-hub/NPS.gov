@@ -67,6 +67,10 @@ export class AuthService {
     });
   }
 
+  async refreshToken(token: string): Promise<TokenResponseDto> {
+    return await this.tokenService.refreshToken(token);
+  }
+
   async logOut(token: string, id: number): Promise<void> {
     await this.tokenService.logOutSession(token, id);
   }

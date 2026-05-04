@@ -24,6 +24,7 @@ import { CodeMessageDto } from '../dtos/code-message.dto';
 import { LoginEcpDto } from '../dtos/login-ecp.dto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { Public } from 'src/core/decorators/public.decorator';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -75,10 +76,11 @@ export class AuthController {
     summary: 'Login with email, password',
   })
   @HttpCode(200)
-  async loginWithEmail(@Body() body: LoginPasswordDto): Promise<TokenResponseDto>{
+  async loginWithEmail(
+    @Body() body: LoginPasswordDto,
+  ): Promise<TokenResponseDto> {
     return this.authService.loginWithPassword(body);
   }
-
 
   @ApiBearerAuth('Authorization')
   @Post('log-out')
@@ -106,5 +108,15 @@ export class AuthController {
   })
   async loginWithEcp(@Body() body: LoginEcpDto) {
     return this.authService.loginWithEcp(body);
+  }
+
+  @Public()
+  @Post('refresh-token')
+  @ApiOperation({
+    summary: 'refresh token',
+  })
+  @HttpCode(200)
+  async refreshToken(@Body() body: RefreshTokenDto): Promise<TokenResponseDto> {
+    return this.authService.refreshToken(body.refreshToken);
   }
 }
