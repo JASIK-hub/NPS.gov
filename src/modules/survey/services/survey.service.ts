@@ -54,10 +54,27 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return surveys;
   }
 
+  async checkUserParticipation(userId:number,id:number):Promise<boolean>{
+    const survey= await this.surveyRepository.findOne({
+      where:{
+        id,
+        vote:{
+          user:{
+            id:userId
+          }
+        }
+      }
+    })
+    if(!survey){
+      return false
+    }
+    return true
+  }
+
   async getSurvey(id: number) {
     const survey = await this.surveyRepository.findOne({
       where: { id },
-      relations: ['vote', 'vote.user', 'options', 'region', 'organization'],
+      relations: ['vote','vote.user','vote.option','options', 'region', 'organization'],
     });
     if (!survey) {
       throw new NotFoundException('Survey not found');

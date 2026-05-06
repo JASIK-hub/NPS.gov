@@ -78,7 +78,7 @@ export class AuthService {
   async loginWithPassword(body: LoginPasswordDto): Promise<TokenResponseDto> {
     const user = await this.userService.findOne({
       where: { email: body.email },
-      select: ['password'],
+      select: ['password','role','id'],
     });
 
     if (!user) {
@@ -87,7 +87,7 @@ export class AuthService {
     if (!user.password) {
       throw new BadRequestException('You do not have password in your profile');
     }
-    const isPasswordMatching = bcrypt.compare(body.password, user.password);
+    const isPasswordMatching =await bcrypt.compare(body.password, user.password);
     if (!isPasswordMatching) {
       throw new BadRequestException('Incorrect password');
     }

@@ -59,6 +59,16 @@ export class SurveyController {
   }
 
   @ApiBearerAuth('Authorization')
+  @Get(':id/user')
+  @ApiOperation({ summary: 'Check if user participates in survey' })
+  async checkUserForSurvey(
+    @CurrentUser('id') userId:number,
+    @Param('id',ParseIntPipe) id :number
+  ): Promise<boolean> {
+    return this.surveyService.checkUserParticipation(userId,id);
+  }
+
+  @ApiBearerAuth('Authorization')
   @Post(':id/vote')
   @ApiQuery({
     name: 'optionId',
