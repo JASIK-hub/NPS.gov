@@ -1,5 +1,5 @@
 FROM node:20-alpine AS builder
-
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY package.json yarn.lock ./

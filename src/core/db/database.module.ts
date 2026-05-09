@@ -4,21 +4,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENV_KEYS } from '../config/env-keys';
 
 @Module({
-  imports:[
+  imports: [
     TypeOrmModule.forRootAsync({
-      imports:[ConfigModule],
-      inject:[ConfigService],
-      useFactory:(config:ConfigService) => ({
-        type:'postgres',
-        host:config.get<string>(ENV_KEYS.POSTGRES_HOST),
-        port:Number(config.get<string>(ENV_KEYS.POSTGRES_PORT)),
-        database:config.get<string>(ENV_KEYS.POSTGRES_DATABASE),
-        password:config.get<string>(ENV_KEYS.POSTGRES_PASSWORD),
-        username:config.get<string>(ENV_KEYS.POSTGRES_USERNAME),
-        synchronize:false,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        url: config.get(ENV_KEYS.POSTGRES_URL),
+        synchronize: false,
+        ssl: {
+          rejectUnauthorized: false,
+        },
         entities: [__dirname + '/entities/*.entity.{js,ts}'],
         migrations: [__dirname + '/migrations/*.{js,ts}'],
       }),
-  })]
+    }),
+  ],
 })
-export class DatabaseModule{}
+export class DatabaseModule {}

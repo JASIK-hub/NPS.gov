@@ -3,13 +3,13 @@ services:
     container_name: nps_backend
     build: .
     restart: always
+    env_file:
+     - .env
     depends_on:
       ncanode:
         condition: service_healthy
     ports:
       - "3000:3000"
-    environment:
-      - .env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
