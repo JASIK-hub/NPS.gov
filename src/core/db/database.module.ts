@@ -12,8 +12,13 @@ import { ENV_KEYS } from '../config/env-keys';
         type: 'postgres',
         url: config.get(ENV_KEYS.POSTGRES_URL),
         synchronize: false,
-        ssl: {
-          rejectUnauthorized: false,
+        connectTimeoutMS: 60000,
+        extra: {
+          сonnectionTimeoutMillis: 60000,
+          query_timeout: 60000,
+          ssl: {
+            rejectUnauthorized: false,
+          },
         },
         entities: [__dirname + '/entities/*.entity.{js,ts}'],
         migrations: [__dirname + '/migrations/*.{js,ts}'],
