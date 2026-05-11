@@ -8,7 +8,7 @@ import { SurveyService } from 'src/modules/survey/services/survey.service';
 import { AdminCreateSurveyDto } from '../dto/admin-create-survey.dto';
 import { title } from 'process';
 import { OptionService } from 'src/modules/survey/services/option.service';
-import { RegionService } from 'src/modules/survey/services/region.service';
+import { RegionService } from 'src/modules/region/service/region.service';
 import { RegionEntity } from 'src/core/db/entities/region.entity';
 import { DataSource } from 'typeorm';
 import { OptionEntity } from 'src/core/db/entities/option.entity';

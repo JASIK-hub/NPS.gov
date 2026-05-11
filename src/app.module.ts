@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './core/guards/public.guard';
 import { SurveyModule } from './modules/survey/survey.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { RegionModule } from './modules/region/region.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AdminModule } from './modules/admin/admin.module';
     UserModule,
     SurveyModule,
     AdminModule,
+    RegionModule
   ],
   providers: [
     {

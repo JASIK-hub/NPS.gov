@@ -12,7 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
 import { UserService } from 'src/modules/user/services/user.service';
 import { VoteService } from 'src/modules/survey/services/vote.service';
-import { RegionService } from './region.service';
+import { RegionService } from '../../region/service/region.service';
 
 @Injectable()
 export class SurveyService extends BaseService<SurveyEntity> {

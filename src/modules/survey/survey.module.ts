@@ -7,7 +7,7 @@ import { SurveyService } from './services/survey.service';
 import { SurveyController } from './controllers/survey.controller';
 import { UserModule } from '../user/user.module';
 import { OptionService } from './services/option.service';
-import { RegionService } from './services/region.service';
+import { RegionService } from '../region/service/region.service';
 import { RegionEntity } from 'src/core/db/entities/region.entity';
 import { OptionEntity } from 'src/core/db/entities/option.entity';
 
