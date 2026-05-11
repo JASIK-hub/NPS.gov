@@ -135,18 +135,24 @@ export class AuthService {
 
   async loginWithEcp(body: LoginEcpDto) {
     const ecpData = await this.ecpService.verifyEcp(body.cms, body.data);
-    const { iin, bin, firstName, lastName, gender, email, organizationName } =
+    const { iin, bin, firstName, lastName, gender, email, organizationName,birthday } =
       ecpData;
 
     let organization: OrganizationEntity | null = null;
 
-    organization = await this.organizationService.findOne({ where: { bin } });
+    if (bin) {
+        organization = await this.organizationService.findOne({
+          where:{
+            bin
+          }
+        });
 
-    if (bin && !organization) {
-      organization = await this.organizationService.createOne({
-        bin: bin,
-        name: organizationName,
-      });
+        if (!organization) {
+          organization = await this.organizationService.createOne({
+            bin: bin,
+            name: organizationName,
+          });
+        }
     }
 
     let user = await this.userService.findOne({ where: { iin } });
@@ -157,12 +163,12 @@ export class AuthService {
         firstName: firstName,
         lastName: lastName,
         gender,
+        birthday:birthday ? birthday : undefined,
         email,
-        role: UserRoles.ADMIN,
+        role: bin? UserRoles.ADMIN : UserRoles.USER,
         organization: organization ? organization : undefined,
       });
     }
-
     return await this.tokenService.generateTokens({
       id: user.id,
       role: user.role,

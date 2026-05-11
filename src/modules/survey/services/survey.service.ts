@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import {
   BadRequestException,
   forwardRef,
@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
 import { UserService } from 'src/modules/user/services/user.service';
 import { VoteService } from 'src/modules/survey/services/vote.service';
+import { RegionService } from './region.service';
 
 @Injectable()
 export class SurveyService extends BaseService<SurveyEntity> {
@@ -21,6 +22,7 @@ export class SurveyService extends BaseService<SurveyEntity> {
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private voteService: VoteService,
+    private regionService:RegionService
   ) {
     super(surveyRepository);
   }
@@ -44,14 +46,52 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return userSurveys;
   }
 
-  async getSurveyList(isActive: boolean) {
-    const surveys = await this.surveyRepository.find({
+  async getStatistics(){
+    const activeSurveys = await this.surveyRepository.count({
       where: {
-        isActive: isActive,
-      },
-      relations: ['region', 'organization'],
+        isActive:true,
+      }
     });
-    return surveys;
+    const totalVotes = await this.voteService.count({});
+    const regionsCount = await this.regionService.count({})
+
+    const totalUsers = await this.userService.count({});
+    const votedUsersCount = await this.userService.countVotedUsers()
+
+    const participationRate = totalUsers > 0 
+      ? (Number(votedUsersCount) / totalUsers) * 100 
+      : 0;
+    return {
+      totalVotes,
+      participationRate,
+      activeSurveys,
+      regionsCount
+    }
+  }
+
+  async getSurveyList(isActive: boolean) {
+    const totalUsers = await this.userService.count({});
+
+    const surveys = await this.surveyRepository.createQueryBuilder('survey')
+      .leftJoinAndSelect('survey.region', 'region')
+      .leftJoinAndSelect('survey.organization', 'organization')
+      .loadRelationCountAndMap('survey.votedCount', 'survey.vote') 
+      .where('survey.isActive = :isActive', { isActive })
+      .getMany();
+
+    const surveysWithStats = surveys.map(survey => {
+      const votesCount = survey.votedCount || 0;
+      const participationRate = totalUsers > 0 
+        ? parseFloat(((votesCount / totalUsers) * 100).toFixed(1)) 
+        : 0;
+
+      return {
+        ...survey,
+        participationRate, 
+      };
+    });
+
+   return surveysWithStats;
   }
 
   async checkUserParticipation(userId:number,id:number):Promise<boolean>{

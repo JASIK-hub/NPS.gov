@@ -1,5 +1,6 @@
 import dataSource from '../data-source';
 import { regionsSeed } from './region.seed';
+import { surveySeed } from './survey.seed';
 
 async function run() {
   try {
@@ -8,6 +9,9 @@ async function run() {
 
     console.log('Processing region Seeds');
     await regionsSeed(source);
+
+    console.log('Processing survey Seeds');
+    await surveySeed(source)
 
     console.log('Database seeded successfully !');
     await dataSource.destroy();

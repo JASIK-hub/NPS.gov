@@ -64,8 +64,8 @@ export class UserEntity {
   phone?: string;
 
   @ApiPropertyOptional()
-  @Column({ type: 'varchar', unique: true })
-  email: string;
+  @Column({ type: 'varchar', unique: true,nullable:true })
+  email?: string;
 
   @ApiProperty({ enum: UserRoles })
   @Column({ type: 'enum', enum: UserRoles, default: UserRoles.USER })

@@ -32,4 +32,14 @@ export class UserService extends BaseService<UserEntity> {
   async getUserSurveys(userId: number, query: SurveyActiveQueryDto) {
     return await this.surveyService.getUserSurveyList(userId, query);
   }
+
+  async countVotedUsers() {
+    const result = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.vote', 'vote')
+      .select('COUNT(DISTINCT user.id)', 'count')
+      .getRawOne();
+      
+    return parseInt(result.count);
+  }
 }

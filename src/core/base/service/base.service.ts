@@ -26,6 +26,7 @@ export class BaseService<T extends { id: number }> {
   }
 
   async createOne(entity: DeepPartial<T>): Promise<T> {
-    return this.repository.create(entity);
+    const newEntity=this.repository.create(entity);
+    return await this.repository.save(newEntity);
   }
 }

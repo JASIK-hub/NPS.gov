@@ -37,6 +37,14 @@ export class SurveyController {
   }
 
   @Public()
+  @Get('statistics')
+  @ApiOperation({ summary: 'Get general statistics of surveys' })
+  async generalStatistics(
+  ) {
+    return this.surveyService.getStatistics();
+  }
+
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Get survey list' })
   @ApiQuery({
@@ -82,4 +90,5 @@ export class SurveyController {
   ) {
     return this.surveyService.voteForSurvey(id, userId, optionId);
   }
+
 }
