@@ -21,7 +21,6 @@ export class UserController {
     return this.userService.getUserSurveys(userId, query);
   }
 
-  
   @Public()
   @Get('survey/participation/statistic')
   @ApiOperation({ summary: 'Get survey participation statistics for 7 days' })

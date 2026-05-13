@@ -11,6 +11,7 @@ import { SurveyActiveQueryDto } from 'src/modules/survey/dto/survey-active-query
 import { SurveyService } from 'src/modules/survey/services/survey.service';
 import { Repository } from 'typeorm';
 import { UserGender } from '../enums/user-gender.enum';
+import { VoteService } from 'src/modules/survey/services/vote.service';
 
 const defaultGroups = [
     { ageGroup: '18-24', count: 0 },
@@ -27,6 +28,7 @@ export class UserService extends BaseService<UserEntity> {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private surveyService: SurveyService,
+    private voteService:VoteService
   ) {
     super(userRepository);
   }
@@ -44,25 +46,7 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   async getSurveyParticipationStats() {
-    const rawData = await this.userRepository.query(`
-      SELECT 
-        TO_CHAR(day, 'DD.MM') as date,
-        COALESCE(COUNT(u.id), 0) as count
-      FROM 
-        generate_series(
-          CURRENT_DATE - INTERVAL '6 days', 
-          CURRENT_DATE, 
-          '1 day'::interval
-        ) day
-      LEFT JOIN "user" u ON DATE(u."createdAt") = DATE(day)
-      GROUP BY day
-      ORDER BY day ASC
-    `);
-
-    return rawData.map(item => ({
-      date: item.date,
-      count: parseInt(item.count, 10)
-    }));
+    return await this.voteService.getParticipationDynamics()
   }
 
   async getUserAgeGroup(){

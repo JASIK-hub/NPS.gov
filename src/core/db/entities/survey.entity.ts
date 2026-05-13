@@ -63,6 +63,10 @@ export class SurveyEntity {
   executionStatus:SurveyExecutionStatus
 
   @ApiProperty()
+  @Column({type:'text',nullable:true})
+  finalDecision:string
+
+  @ApiProperty()
   @Column({ type: 'integer', default: 0 })
   votedCount: number;
 

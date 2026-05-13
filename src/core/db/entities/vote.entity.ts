@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { SurveyEntity } from './survey.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -8,6 +8,9 @@ import { OptionEntity } from './option.entity';
 export class VoteEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @CreateDateColumn() 
+  createdAt: Date
 
   @ApiProperty()
   @ManyToOne(() => UserEntity, (user) => user.vote)
