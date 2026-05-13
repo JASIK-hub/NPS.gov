@@ -37,12 +37,24 @@ export class SurveyController {
   }
 
   @Public()
+  @Get('type/statistic')
+  @ApiOperation({ summary: 'Get statistic for survey type' })
+  @ApiResponse({
+    type: [String],
+    status: 200,
+  })
+  async getSurveyTypeStats() {
+    return this.surveyService.getSurveyTypeStats()
+  }
+
+  @Public()
   @Get('statistics')
   @ApiOperation({ summary: 'Get general statistics of surveys' })
   async generalStatistics(
   ) {
     return this.surveyService.getStatistics();
   }
+
 
   @Public()
   @Get()

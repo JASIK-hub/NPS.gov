@@ -46,6 +46,21 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return userSurveys;
   }
 
+
+  async getSurveyTypeStats(){
+    const rawData=await this.surveyRepository
+      .createQueryBuilder('survey')
+      .select('survey.type', 'type')
+      .addSelect('COUNT(survey.id)','count')
+      .groupBy('survey.type')
+      .getRawMany();
+
+    return rawData.map(item => ({
+      type: item.type,
+      count: Number(item.count)
+    }));
+  }
+
   async getStatistics(){
     const activeSurveys = await this.surveyRepository.count({
       where: {

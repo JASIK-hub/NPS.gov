@@ -10,6 +10,16 @@ import { RegisterUserDto } from 'src/modules/auth/dtos/register-user.dto';
 import { SurveyActiveQueryDto } from 'src/modules/survey/dto/survey-active-query.dto';
 import { SurveyService } from 'src/modules/survey/services/survey.service';
 import { Repository } from 'typeorm';
+import { UserGender } from '../enums/user-gender.enum';
+
+const defaultGroups = [
+    { ageGroup: '18-24', count: 0 },
+    { ageGroup: '25-34', count: 0 },
+    { ageGroup: '35-44', count: 0 },
+    { ageGroup: '45-54', count: 0 },
+    { ageGroup: '55-64', count: 0 },
+    { ageGroup: '65+',    count: 0 },
+  ];
 
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
@@ -31,6 +41,71 @@ export class UserService extends BaseService<UserEntity> {
 
   async getUserSurveys(userId: number, query: SurveyActiveQueryDto) {
     return await this.surveyService.getUserSurveyList(userId, query);
+  }
+
+  async getSurveyParticipationStats() {
+    const rawData = await this.userRepository.query(`
+      SELECT 
+        TO_CHAR(day, 'DD.MM') as date,
+        COALESCE(COUNT(u.id), 0) as count
+      FROM 
+        generate_series(
+          CURRENT_DATE - INTERVAL '6 days', 
+          CURRENT_DATE, 
+          '1 day'::interval
+        ) day
+      LEFT JOIN "user" u ON DATE(u."createdAt") = DATE(day)
+      GROUP BY day
+      ORDER BY day ASC
+    `);
+
+    return rawData.map(item => ({
+      date: item.date,
+      count: parseInt(item.count, 10)
+    }));
+  }
+
+  async getUserAgeGroup(){
+    const rawData=await this.userRepository
+    .createQueryBuilder('user')
+    .select(
+      `CASE 
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) BETWEEN 18 AND 24 THEN '18-24'
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) BETWEEN 25 AND 34 THEN '25-34'
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) BETWEEN 35 AND 44 THEN '35-44'
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) BETWEEN 45 AND 54 THEN '45-54'
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) BETWEEN 55 AND 64 THEN '55-64'
+        WHEN EXTRACT(YEAR FROM AGE(user.birthday)) >= 65 THEN '65+'
+        ELSE 'Other'
+      END`, 
+      'ageGroup'
+    )
+    .addSelect('COUNT(user.id)', 'count')
+    .groupBy('"ageGroup"')
+    .orderBy('MIN(EXTRACT(YEAR FROM AGE(user.birthday)))', 'ASC') 
+    .getRawMany();
+
+    return defaultGroups.map(group => {
+      const found = rawData.find(d => d.ageGroup === group.ageGroup);
+      return {
+        ageGroup: group.ageGroup,
+        count: found ? parseInt(found.count, 10) : 0
+      };
+    });
+  }
+
+  async getUserGender(){
+    const rawData=await this.userRepository
+    .createQueryBuilder('user')
+    .select('user.gender', 'genderGroup') 
+    .addSelect('COUNT(user.id)', 'count')
+    .groupBy('user.gender') 
+    .getRawMany();
+
+    return rawData.map(item=>({
+      gender:item.genderGroup,
+      count:parseInt(item.count, 10)
+    }))
   }
 
   async countVotedUsers() {
