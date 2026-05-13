@@ -41,6 +41,16 @@ export class UserService extends BaseService<UserEntity> {
     return await this.userRepository.save(user);
   }
 
+  async findByIdentifier(identifier: string) {
+    return await this.userRepository.findOne({
+      where: [
+        { email: identifier },
+        { iin: identifier },
+      ],
+      select: ['id', 'password', 'role', 'email', 'firstName', 'lastName'],
+    });
+  }
+
   async getUserSurveys(userId: number, query: SurveyActiveQueryDto) {
     return await this.surveyService.getUserSurveyList(userId, query);
   }

@@ -186,4 +186,27 @@ export class SurveyService extends BaseService<SurveyEntity> {
     }
     return { message: 'Vote cast successfully' };
   }
+
+  async getAllSurveysWithRelations() {
+    return this.surveyRepository.find({
+      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getSurveysByOrganization(organizationId: number) {
+    return this.surveyRepository.find({
+      where: { organization: { id: organizationId } },
+      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async update(id: number, updateData: Partial<SurveyEntity>) {
+    await this.surveyRepository.update({ id }, updateData);
+  }
+
+  async delete(id: number) {
+    await this.surveyRepository.delete({ id });
+  }
 }

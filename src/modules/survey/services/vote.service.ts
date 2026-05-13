@@ -15,19 +15,43 @@ export class VoteService extends BaseService<VoteEntity> {
 
   async getParticipationDynamics() {
     const rawData = await this.voteRepo.query(`
-      SELECT 
+      SELECT
         TO_CHAR(day, 'DD.MM') as date,
         COALESCE(COUNT(v.id), 0) as count
-      FROM 
+      FROM
         generate_series(
-          CURRENT_DATE - INTERVAL '6 days', 
-          CURRENT_DATE, 
+          CURRENT_DATE - INTERVAL '6 days',
+          CURRENT_DATE,
           '1 day'::interval
         ) day
       LEFT JOIN "vote" v ON DATE(v."createdAt") = DATE(day)
       GROUP BY day
       ORDER BY day ASC
     `);
+
+    return rawData.map(item => ({
+      date: item.date,
+      count: parseInt(item.count, 10)
+    }));
+  }
+
+  async getAdminParticipationStats(organizationId: number) {
+    const rawData = await this.voteRepo.query(`
+      SELECT
+        TO_CHAR(day, 'DD.MM') as date,
+        COALESCE(COUNT(v.id), 0) as count
+      FROM
+        generate_series(
+          CURRENT_DATE - INTERVAL '6 days',
+          CURRENT_DATE,
+          '1 day'::interval
+        ) day
+      LEFT JOIN "vote" v ON DATE(v."createdAt") = DATE(day)
+        LEFT JOIN "survey" s ON v."surveyId" = s.id
+        AND s."organization_id" = $1
+      GROUP BY day
+      ORDER BY day ASC
+    `, [organizationId]);
 
     return rawData.map(item => ({
       date: item.date,

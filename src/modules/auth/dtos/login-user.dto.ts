@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginEmailDto {
-  @ApiProperty({ default: 'example@gmail.com' })
-  @IsEmail()
+  @ApiProperty({ default: 'example@gmail.com или ИИН' })
   @IsNotEmpty()
+  @IsString()
   @Transform(({ value }) => value.trim())
-  email: string;
+  identifier: string;
 }
 
 export class LoginPasswordDto extends LoginEmailDto{
