@@ -11,12 +11,14 @@ import { ENV_KEYS } from 'src/core/config/env-keys';
 import { EcpService } from './services/ecp.service';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { AuthDevController } from './controller/auth-dev.controller';
+import { NotifierModule } from '../notifier/notifier.module';
 
 @Module({
   imports: [
     UserModule,
     RedisModule,
     HttpModule,
+    NotifierModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -3,6 +3,8 @@ import {
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
+  ObjectId,
+  ObjectLiteral,
   Repository,
 } from 'typeorm';
 
@@ -26,6 +28,14 @@ export class BaseService<T extends { id: number }> {
   }
 
   async createOne(entity: DeepPartial<T>): Promise<T> {
-    return this.repository.create(entity);
+    const newEntity=this.repository.create(entity);
+    return await this.repository.save(newEntity);
+  }
+
+  async update(
+    criteria: string | number | string[] | number[] | FindOptionsWhere<T>,
+    entity: DeepPartial<T>
+  ): Promise<void> {
+    await this.repository.update(criteria, entity as any);
   }
 }

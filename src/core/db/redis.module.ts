@@ -10,7 +10,10 @@ export const RedisProvider: Provider = {
     return new Redis({
       host: configService.get<string>(ENV_KEYS.REDIS_HOST),
       password: configService.get<string>(ENV_KEYS.REDIS_PASSWORD),
-      port: Number(configService.get<string>(ENV_KEYS.REDIS_PORT)),
+      port: Number(configService.get<string>(ENV_KEYS.REDIS_PORT)) || 6379,
+      tls:{
+        rejectUnauthorized:false
+      }
     });
   },
 };

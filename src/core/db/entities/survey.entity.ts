@@ -13,6 +13,7 @@ import { RegionEntity } from './region.entity';
 import { VoteEntity } from './vote.entity';
 import { OptionEntity } from './option.entity';
 import { SurveyType } from 'src/modules/survey/enums/survey-type.enum';
+import { SurveyExecutionStatus } from 'src/modules/survey/enums/survey-execution.enum';
 
 @Entity('survey')
 export class SurveyEntity {
@@ -56,6 +57,14 @@ export class SurveyEntity {
   @ManyToOne(() => RegionEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'region_id' })
   region: RegionEntity | null;
+
+  @ApiProperty({ enum: SurveyExecutionStatus })
+  @Column({ type: 'enum', enum: SurveyExecutionStatus,default:SurveyExecutionStatus.IN_PROGRESS })
+  executionStatus:SurveyExecutionStatus
+
+  @ApiProperty()
+  @Column({type:'text',nullable:true})
+  finalDecision:string
 
   @ApiProperty()
   @Column({ type: 'integer', default: 0 })

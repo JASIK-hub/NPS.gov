@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { ENV_KEYS } from 'src/core/config/env-keys';
 import { extractGenderFromIin } from '../utils/extract-gender.util';
+import { getBirthdayFromIin } from '../utils/birthday.util';
 @Injectable()
 export class EcpService {
   constructor(
@@ -22,7 +23,6 @@ export class EcpService {
           checkCrl: false,
         },
       );
-
       const responseData = response.data;
       if (responseData.status === 200 && responseData.valid) {
         const subject = responseData.signers[0].certificates[0].subject;
@@ -34,6 +34,7 @@ export class EcpService {
             subject.givenName || subject.commonName.split(' ')[1] || '',
           lastName: subject.surName || subject.commonName.split(' ')[0] || '',
           email: subject.email || null,
+          birthday:getBirthdayFromIin(subject.iin),
           gender: extractGenderFromIin(subject.iin),
           organizationName: subject.organization || null,
         };
