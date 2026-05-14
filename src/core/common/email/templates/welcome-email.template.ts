@@ -124,7 +124,7 @@ export const welcomeEmailTemplate = (userName?: string) => `
       </div>
 
       <p style="text-align: center;">
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile" class="button">Перейти в профиль</a>
+        <a href="${process.env.APP_URL || 'http://localhost:3000'}/profile" class="button">Перейти в профиль</a>
       </p>
 
       <p>В своём профиле вы можете подтвердить email для быстрого входа, а также создать пароль для удобного доступа к системе.</p>

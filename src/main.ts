@@ -18,9 +18,19 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transformOptions: {
         enableImplicitConversion: true,
+      },
+      exceptionFactory: (errors) => {
+        console.log('Validation errors:', errors);
+        const messages = errors.map(error => ({
+          field: error.property,
+          constraints: error.constraints,
+          value: error.value,
+        }));
+        console.log('Detailed validation errors:', JSON.stringify(messages, null, 2));
+        return new Error(`Validation failed: ${JSON.stringify(messages)}`);
       },
     }),
   );

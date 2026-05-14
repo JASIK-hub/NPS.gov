@@ -87,12 +87,12 @@ export class SurveyService extends BaseService<SurveyEntity> {
   async getSurveyList(isActive: boolean) {
     const totalUsers = await this.userService.count({});
 
-    const surveys = await this.surveyRepository.createQueryBuilder('survey')
-      .leftJoinAndSelect('survey.region', 'region')
-      .leftJoinAndSelect('survey.organization', 'organization')
-      .loadRelationCountAndMap('survey.votedCount', 'survey.vote') 
-      .where('survey.isActive = :isActive', { isActive })
-      .getMany();
+    const surveys= await this.surveyRepository.find({
+      where:{
+        isActive
+      },
+      relations:['organization','region','vote']
+    })
 
     const surveysWithStats = surveys.map(survey => {
       const votesCount = survey.votedCount || 0;

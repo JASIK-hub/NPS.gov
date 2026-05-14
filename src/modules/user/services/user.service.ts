@@ -33,14 +33,6 @@ export class UserService extends BaseService<UserEntity> {
     super(userRepository);
   }
 
-  async createUser(body: RegisterUserDto) {
-    const user = this.userRepository.create({
-      email: body.email,
-      password: body.password,
-    });
-    return await this.userRepository.save(user);
-  }
-
   async findByIdentifier(identifier: string) {
     return await this.userRepository.findOne({
       where: [

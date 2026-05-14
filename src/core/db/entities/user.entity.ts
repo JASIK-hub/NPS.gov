@@ -67,6 +67,10 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true,nullable:true })
   email?: string;
 
+  @ApiPropertyOptional()
+  @Column({ type: 'boolean', default: false, nullable: true })
+  emailVerified?: boolean;
+
   @ApiProperty({ enum: UserRoles })
   @Column({ type: 'enum', enum: UserRoles, default: UserRoles.USER })
   role?: UserRoles;

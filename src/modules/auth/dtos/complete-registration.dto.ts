@@ -6,7 +6,6 @@ import {
   IsOptional,
   IsString,
   MinLength,
-  IsPhoneNumber,
   Length,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -16,19 +15,19 @@ export class CompleteRegistrationDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => value?.trim?.() || value)
   firstName: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => value?.trim?.() || value)
   lastName: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @MinLength(10)
   phone: string;
 
   @ApiProperty()
@@ -44,7 +43,7 @@ export class CompleteRegistrationDto {
   @IsString()
   @IsNotEmpty()
   @Length(4, 6)
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }) => value?.trim?.() || value)
   emailCode: string;
 
   @ApiProperty()

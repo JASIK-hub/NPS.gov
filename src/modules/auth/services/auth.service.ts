@@ -16,9 +16,7 @@ import { TokenResponseDto } from '../dtos/token-response.dto';
 import { RegisterUserDto } from '../dtos/register-user.dto';
 import { LoginPasswordDto, LoginEmailDto } from '../dtos/login-user.dto';
 import { LoginCodeDto } from '../dtos/login-code.dto';
-import { Resend } from 'resend';
 import { OtpService } from './otp.service';
-import { otpEmailTemplate } from 'src/core/common/email/templates/otp-email.template';
 import { CodeMessageDto } from '../dtos/code-message.dto';
 import { LoginEcpDto } from '../dtos/login-ecp.dto';
 import { EcpService } from './ecp.service';
@@ -54,7 +52,7 @@ export class AuthService {
       }
     }
     body.password = await this.hashPassword(body.password);
-    const user = await this.userService.createUser(body);
+    const user = await this.userService.save(body);
     return await this.tokenService.generateTokens({
       id: user.id,
       role: user.role,
@@ -73,20 +71,8 @@ export class AuthService {
   }
 
   async sendCode(body: SendCodeDto): Promise<CodeMessageDto> {
-    const resendApiKey = this.configService.get<string>(
-      ENV_KEYS.RESEND_API_KEY,
-    );
     const code = await this.otpService.generateCode(body.email);
-    const resend = new Resend(resendApiKey);
-    const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: body.email,
-      subject: 'Your 4 digit code for NPS.gov app',
-      html: otpEmailTemplate(code),
-    });
-    if (result.error) {
-      throw new InternalServerErrorException('Error while sending code');
-    }
+    await this.notifierService.sendOtpCode(body.email, code, 'Your 4 digit code for NPS.gov app');
     return { message: 'code sent' };
   }
 
@@ -155,8 +141,14 @@ export class AuthService {
         }
     }
 
-    let user = await this.userService.findOne({ where: { iin } });
+    let user = email ? await this.userService.findOne({ where: { email } }) : null;
+
+    if (!user && iin) {
+      user = await this.userService.findOne({ where: { iin } });
+    }
+
     const isNewUser = !user;
+    const wasEmailUser = !!user && !user.iin && user.email === email;
 
     if (isNewUser) {
       user = await this.userService.createOne({
@@ -169,9 +161,19 @@ export class AuthService {
         role: bin? UserRoles.ADMIN : UserRoles.USER,
         organization: organization ? organization : undefined,
       });
-
-      if (email) {
-        await this.notifierService.sendWelcomeEmail(email, `${firstName} ${lastName}`.trim());
+      
+    } else if (wasEmailUser && user) {
+      await this.userService.update(user.id, {
+        iin: iin,
+        firstName: firstName || user.firstName,
+        lastName: lastName || user.lastName,
+        gender: gender || user.gender,
+        birthday: birthday || user.birthday,
+        organization: organization ? organization : user.organization,
+      });
+      const updatedUser = await this.userService.findOne({ where: { id: user.id } });
+      if (updatedUser) {
+        user = updatedUser;
       }
     }
 
@@ -190,20 +192,8 @@ export class AuthService {
       throw new BadRequestException('Пользователь с таким email не найден');
     }
 
-    const resendApiKey = this.configService.get<string>(
-      ENV_KEYS.RESEND_API_KEY,
-    );
     const code = await this.otpService.generateCode(email);
-    const resend = new Resend(resendApiKey);
-    const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: email,
-      subject: 'Сброс пароля NPS.gov',
-      html: otpEmailTemplate(code),
-    });
-    if (result.error) {
-      throw new InternalServerErrorException('Не удалось отправить код. Попробуйте позже.');
-    }
+    await this.notifierService.sendOtpCode(email, code, 'Сброс пароля NPS.gov');
     return { message: 'Код для сброса пароля отправлен на вашу почту' };
   }
 
@@ -262,6 +252,11 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      phone: user.phone,
+      hasPassword: !!user.password,
+      emailVerified: !!user.emailVerified,
+      birthday: user.birthday,
+      gender: user.gender,
     };
   }
 
@@ -274,20 +269,8 @@ export class AuthService {
       throw new BadRequestException('Этот email уже используется другим пользователем');
     }
 
-    const resendApiKey = this.configService.get<string>(
-      ENV_KEYS.RESEND_API_KEY,
-    );
     const code = await this.otpService.generateCode(email);
-    const resend = new Resend(resendApiKey);
-    const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: email,
-      subject: 'Подтверждение email NPS.gov',
-      html: otpEmailTemplate(code),
-    });
-    if (result.error) {
-      throw new InternalServerErrorException('Не удалось отправить код. Попробуйте позже.');
-    }
+    await this.notifierService.sendOtpCode(email, code, 'Подтверждение email NPS.gov');
     return { message: 'Код подтверждения отправлен на вашу почту' };
   }
 
@@ -326,7 +309,8 @@ export class AuthService {
   }
 
   async completeRegistration(body: CompleteRegistrationDto): Promise<TokenResponseDto> {
-    const { phone, emailCode, firstName, lastName, birthday, gender, email, password, ecpSignature, ecpData } = body;
+    const { phone, emailCode, firstName, lastName, birthday, gender, email, password } = body;
+
     const isValidCode = await this.otpService.verifyCode(emailCode, email);
 
     if (!isValidCode) {
@@ -363,13 +347,14 @@ export class AuthService {
       userData.password = await this.hashPassword(password);
     }
 
-    if (ecpSignature && ecpData) {
-      userData.ecpData = ecpData;
+    const user = await this.userService.save(userData);
+
+    try{
+      if (email) {
+        await this.notifierService.sendWelcomeEmail(email, `${firstName} ${lastName}`.trim());
+      }
     }
-
-    const user = await this.userService.createUser(userData);
-
-    console.log(`Пользователь зарегистрирован: ${email}`);
+    catch{}
 
     return await this.tokenService.generateTokens({
       id: user.id,

@@ -1,34 +1,51 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 import { ENV_KEYS } from 'src/core/config/env-keys';
 import { welcomeEmailTemplate } from 'src/core/common/email/templates/welcome-email.template';
+import { otpEmailTemplate } from 'src/core/common/email/templates/otp-email.template';
 
 @Injectable()
 export class NotifierService {
-  private resend: Resend;
+  private transporter: nodemailer.Transporter;
   private fromEmail: string;
 
   constructor(private configService: ConfigService) {
-    const resendApiKey = this.configService.get<string>(ENV_KEYS.RESEND_API_KEY);
-    this.resend = new Resend(resendApiKey);
-    this.fromEmail = 'onboarding@resend.dev';
+    const host = this.configService.get<string>(ENV_KEYS.MAIL_HOST);
+    const port = Number(this.configService.get<number>(ENV_KEYS.MAIL_PORT));
+    const user = this.configService.get<string>(ENV_KEYS.MAIL_USER);
+    const password = this.configService.get<string>(ENV_KEYS.MAIL_PASSWORD);
+    this.fromEmail = this.configService.get<string>(ENV_KEYS.MAIL_FROM) || user || '';
+
+    if (!host || !port || !user || !password) {
+      throw new Error('Mail configuration is missing.');
+    }
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: {
+        user,
+        pass: password,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
   }
 
   async sendWelcomeEmail(email: string, userName?: string): Promise<void> {
     try {
-      const result = await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: email,
         subject: 'Добро пожаловать в NPS.GOV',
         html: welcomeEmailTemplate(userName),
       });
-
-      if (result.error) {
-        throw new InternalServerErrorException('Не удалось отправить приветственное письмо');
-      }
     } catch (error) {
       console.error('Error sending welcome email:', error);
+      throw new InternalServerErrorException('Не удалось отправить приветственное письмо');
     }
   }
 
@@ -38,18 +55,15 @@ export class NotifierService {
     content: string,
   ): Promise<void> {
     try {
-      const result = await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
         to: email,
         subject,
         html: content,
       });
-
-      if (result.error) {
-        throw new InternalServerErrorException('Не удалось отправить уведомление');
-      }
     } catch (error) {
       console.error('Error sending notification email:', error);
+      throw new InternalServerErrorException('Не удалось отправить уведомление');
     }
   }
 
@@ -86,5 +100,19 @@ export class NotifierService {
       'Новый опрос на NPS.GOV',
       content,
     );
+  }
+
+  async sendOtpCode(email: string, code: string, subject: string = 'Код подтверждения'): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.fromEmail,
+        to: email,
+        subject,
+        html: otpEmailTemplate(code),
+      });
+    } catch (error) {
+      console.error('Error sending OTP email:', error);
+      throw new InternalServerErrorException('Не удалось отправить код подтверждения');
+    }
   }
 }
