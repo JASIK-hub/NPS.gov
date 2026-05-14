@@ -1,8 +1,10 @@
+
 FROM node:20-alpine AS builder
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY package.json yarn.lock ./
+RUN yarn config set network-timeout 600000 -g
 RUN yarn install --frozen-lockfile
 
 COPY . .
