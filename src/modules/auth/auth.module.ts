@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module } from '@nestjs/common';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './controller/auth.controller';
 import { AuthService } from './services/auth.service';
@@ -31,7 +31,7 @@ import { NotifierModule } from '../notifier/notifier.module';
     }),
   ],
   controllers: [AuthController, AuthDevController],
-  providers: [TokenService, AuthService, OtpService, EcpService],
+  providers: [TokenService, AuthService, OtpService, EcpService,Logger],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}

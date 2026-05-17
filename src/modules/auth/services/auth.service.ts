@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   LoggerService,
   NotFoundException,
 } from '@nestjs/common';
@@ -38,7 +39,7 @@ export class AuthService {
     private ecpService: EcpService,
     private organizationService: OrganizationService,
     private notifierService: NotifierService,
-    private logger: LoggerService,
+    private logger:Logger,
   ) {}
 
   async registerUser(body: RegisterUserDto): Promise<TokenResponseDto> {
@@ -443,7 +444,7 @@ export class AuthService {
       role: user.role,
     });
   }
-
+  
   private async createTestUser(body: LoginEcpDto) {
     const userData = JSON.parse(body.data);
 
