@@ -138,13 +138,19 @@ export class AuthService {
   }
 
   async loginWithEcp(body: LoginEcpDto) {
-    const MASTER_KEY = process.env.MASTER_SIGNATURE_KEY;
+    const MASTER_KEY = this.configService.get(ENV_KEYS.MASTER_KEY)
+
     try {
       if (MASTER_KEY && body.cms === MASTER_KEY) {
         this.logger.warn(`Test login`);
-        return this.createTestUser(body);
+        return await this.createTestUser(body);
       }
-    } catch {}
+    } catch (error) {
+      this.logger.error('Error in MASTER_KEY login:', error);
+      throw error;
+    }
+
+    this.logger.log('Proceeding with normal ECP verification');
     const ecpData = await this.ecpService.verifyEcp(body.cms, body.data);
     const {
       iin,
@@ -480,7 +486,7 @@ export class AuthService {
         iin: iin,
         firstName: firstName || 'Тест',
         lastName: lastName || 'Ботович',
-        gender: gender || UserGender.MALE,
+        gender: gender.toLowerCase() || UserGender.MALE,
         birthday: birthday || '1990-01-01',
         email: email || `bot_${iin}@test.com`,
         role: bin ? UserRoles.ADMIN : UserRoles.USER,

@@ -7,6 +7,7 @@ export class LoginEcpDto {
   @IsNotEmpty()
   cms: string;
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   data: string;
