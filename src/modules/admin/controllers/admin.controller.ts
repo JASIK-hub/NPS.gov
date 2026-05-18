@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -14,6 +15,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { AdminCreateSurveyDto } from '../dto/admin-create-survey.dto';
@@ -48,9 +50,13 @@ export class AdminController {
   @ApiBearerAuth('Authorization')
   @Get('surveys')
   @ApiOperation({ summary: 'Get all surveys for admin' })
+  @ApiQuery({ name: 'lang', required: false, enum: ['ru', 'kz'] })
   @ApiOkResponse({ description: 'List of all surveys' })
-  async getAllSurveys(@CurrentUser('id') userId: number) {
-    return this.adminService.getAllSurveys(userId);
+  async getAllSurveys(
+    @CurrentUser('id') userId: number,
+    @Query('lang') lang: string = 'ru'
+  ) {
+    return this.adminService.getAllSurveys(userId, lang);
   }
 
   @ApiBearerAuth('Authorization')

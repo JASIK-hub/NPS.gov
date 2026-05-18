@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { BaseService } from 'src/core/base/service/base.service';
 import { SurveyService } from 'src/modules/survey/services/survey.service';
+import { SurveyTypeService } from 'src/modules/survey/services/survey-type.service';
 import { VoteService } from 'src/modules/survey/services/vote.service';
 import { AdminCreateSurveyDto } from '../dto/admin-create-survey.dto';
 import { OptionService } from 'src/modules/survey/services/option.service';
@@ -13,6 +14,7 @@ import { RegionEntity } from 'src/core/db/entities/region.entity';
 import { DataSource } from 'typeorm';
 import { OptionEntity } from 'src/core/db/entities/option.entity';
 import { SurveyEntity } from 'src/core/db/entities/survey.entity';
+import { SurveyTypeEntity } from 'src/core/db/entities/survey-type.entity';
 import { UserService } from 'src/modules/user/services/user.service';
 import { AdminUpdateSurveyDto } from '../dto/admin-update-survey.dto';
 import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
@@ -21,6 +23,7 @@ import { UserRoles } from 'src/modules/user/enums/user-roles.enum';
 export class AdminService {
   constructor(
     private surveyService: SurveyService,
+    private surveyTypeService: SurveyTypeService,
     private voteService: VoteService,
     private optionService: OptionService,
     private regionService: RegionService,
@@ -50,6 +53,14 @@ export class AdminService {
       throw new BadRequestException('Survey with this title already exists');
     }
 
+    const surveyType = await this.surveyTypeService.findOne({
+      where: { id: body.typeId },
+    });
+
+    if (!surveyType) {
+      throw new BadRequestException('Survey type not found');
+    }
+
     let region: RegionEntity | null = null;
     if (body.region) {
       region = await this.regionService.findOne({
@@ -63,10 +74,14 @@ export class AdminService {
     }
     const createBody = {
       title: body.title,
+      titleKz: body.titleKz,
       description: body.description,
+      descriptionKz: body.descriptionKz,
+      subTitle: body.subTitle,
+      subTitleKz: body.subTitleKz,
       validUntil: body.validUntil,
       organization: user.organization,
-      type: body.type,
+      type: surveyType,
       startDate: body.startDate,
       region,
     };
@@ -76,8 +91,9 @@ export class AdminService {
         throw new Error('Something went wrong while creating survey');
       }
 
-      const optionsToSave = body.options.map((text) => ({
+      const optionsToSave = body.options.map((text, index) => ({
         title: text,
+        titleKz: body.optionsKz?.[index],
         survey: createdSurvey,
       }));
 
@@ -85,7 +101,7 @@ export class AdminService {
     });
   }
 
-  async getAllSurveys(userId: number) {
+  async getAllSurveys(userId: number, language: string = 'ru') {
     const user = await this.userService.findOne({
       where: { id: userId },
       relations: ['organization'],
@@ -97,7 +113,7 @@ export class AdminService {
       throw new BadRequestException('User must belong to an organization');
     }
 
-    return await this.surveyService.getSurveysByOrganization(user.organization.id);
+    return await this.surveyService.getSurveysByOrganization(user.organization.id, language);
   }
 
   async updateSurvey(id: number, body: AdminUpdateSurveyDto, userId: number) {

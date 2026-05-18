@@ -32,8 +32,10 @@ export class SurveyController {
     type: [String],
     status: 200,
   })
-  async getTypes() {
-    return Object.values(SurveyType);
+  async getTypes(
+    @Query('language') language: string = 'ru'
+  ) {
+    return this.surveyService.getSurveyTypes(language)
   }
 
   @Public()
@@ -43,8 +45,10 @@ export class SurveyController {
     type: [String],
     status: 200,
   })
-  async getSurveyTypeStats() {
-    return this.surveyService.getSurveyTypeStats()
+  async getSurveyTypeStats(
+     @Query('language') language: string = 'ru'
+  ) {
+    return this.surveyService.getSurveyTypeStats(language)
   }
 
   @Public()
@@ -65,8 +69,9 @@ export class SurveyController {
   })
   async getSurveys(
     @Query('isActive') isActive: boolean,
+    @Query('language') language:string
   ): Promise<SurveyEntity[]> {
-    return this.surveyService.getSurveyList(isActive);
+    return this.surveyService.getSurveyList(isActive,language);
   }
 
   @Public()
@@ -74,8 +79,9 @@ export class SurveyController {
   @ApiOperation({ summary: 'Get survey by Id' })
   async getSurvey(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<SurveyEntity> {
-    return this.surveyService.getSurvey(id);
+    @Query('language') language: string = 'ru'
+  ) {
+    return this.surveyService.getSurvey(id, language);
   }
 
   @ApiBearerAuth('Authorization')

@@ -11,6 +11,10 @@ export class RegionEntity {
   @Column({ unique: true })
   name: string;
 
+  @ApiProperty()
+  @Column({ unique: true })
+  nameKz:string
+
   @ApiProperty({ example: 'ALM', enum: RegionCodes })
   @Column({ type: 'enum', enum: RegionCodes })
   code: RegionCodes;

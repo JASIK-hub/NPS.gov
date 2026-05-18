@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -18,6 +18,10 @@ export class OptionEntity {
   @ApiProperty()
   @Column({ type: 'varchar' })
   title: string;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', nullable: true })
+  titleKz: string;
 
   @ApiProperty()
   @ManyToOne(() => SurveyEntity, (survey) => survey.options)

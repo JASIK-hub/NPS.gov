@@ -13,6 +13,8 @@ import { SurveyActiveQueryDto } from '../dto/survey-active-query.dto';
 import { UserService } from 'src/modules/user/services/user.service';
 import { VoteService } from 'src/modules/survey/services/vote.service';
 import { RegionService } from '../../region/service/region.service';
+import { SurveyTypeService } from './survey-type.service';
+import { LocalizeMapper } from '../mappers/survey-localize.mapper';
 
 @Injectable()
 export class SurveyService extends BaseService<SurveyEntity> {
@@ -22,7 +24,8 @@ export class SurveyService extends BaseService<SurveyEntity> {
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private voteService: VoteService,
-    private regionService:RegionService
+    private regionService:RegionService,
+    private surveyTypeService:SurveyTypeService
   ) {
     super(surveyRepository);
   }
@@ -46,20 +49,16 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return userSurveys;
   }
 
-
-  async getSurveyTypeStats(){
-    const rawData=await this.surveyRepository
-      .createQueryBuilder('survey')
-      .select('survey.type', 'type')
-      .addSelect('COUNT(survey.id)','count')
-      .groupBy('survey.type')
-      .getRawMany();
-
-    return rawData.map(item => ({
-      type: item.type,
-      count: Number(item.count)
-    }));
+  async getSurveyTypeStats(language: string = 'ru'){
+    const stats = await this.surveyTypeService.getTypeStats();
+    return LocalizeMapper.mapSurveyTypeStats(stats, language);
   }
+
+  async getSurveyTypes(language: string = 'ru'){
+    const types = await this.surveyTypeService.getAllTypes();
+    return LocalizeMapper.mapSurveyTypes(types, language);
+  }
+
 
   async getStatistics(){
     const activeSurveys = await this.surveyRepository.count({
@@ -84,25 +83,25 @@ export class SurveyService extends BaseService<SurveyEntity> {
     }
   }
 
-  async getSurveyList(isActive: boolean) {
+  async getSurveyList(isActive: boolean, language: string = 'ru') {
     const totalUsers = await this.userService.count({});
 
     const surveys= await this.surveyRepository.find({
       where:{
         isActive
       },
-      relations:['organization','region','vote']
+      relations:['organization','region','vote','type']
     })
 
     const surveysWithStats = surveys.map(survey => {
       const votesCount = survey.votedCount || 0;
-      const participationRate = totalUsers > 0 
-        ? parseFloat(((votesCount / totalUsers) * 100).toFixed(1)) 
+      const participationRate = totalUsers > 0
+        ? parseFloat(((votesCount / totalUsers) * 100).toFixed(1))
         : 0;
 
       return {
-        ...survey,
-        participationRate, 
+        ...LocalizeMapper.mapSurveyTo(survey, language),
+        participationRate,
       };
     });
 
@@ -126,16 +125,16 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return true
   }
 
-  async getSurvey(id: number) {
+  async getSurvey(id: number, language: string = 'ru') {
     const survey = await this.surveyRepository.findOne({
       where: { id },
-      relations: ['vote','vote.user','vote.option','options', 'region', 'organization'],
+      relations: ['vote','vote.user','vote.option','options', 'region', 'organization', 'type'],
     });
     if (!survey) {
       throw new NotFoundException('Survey not found');
     }
 
-    return survey;
+    return LocalizeMapper.mapSurveyTo(survey, language);
   }
 
   async voteForSurvey(id: number, userId: number, optionId: number) {
@@ -151,7 +150,7 @@ export class SurveyService extends BaseService<SurveyEntity> {
 
     const survey = await this.surveyRepository.findOne({
       where: { id, isActive: true },
-      relations: ['options'],
+      relations: ['options', 'type'],
     });
 
     if (!survey) {
@@ -187,19 +186,23 @@ export class SurveyService extends BaseService<SurveyEntity> {
     return { message: 'Vote cast successfully' };
   }
 
-  async getAllSurveysWithRelations() {
-    return this.surveyRepository.find({
-      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization'],
+  async getAllSurveysWithRelations(language: string = 'ru') {
+    const surveys = await this.surveyRepository.find({
+      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization', 'type'],
       order: { createdAt: 'DESC' },
     });
+
+    return surveys.map(survey => LocalizeMapper.mapSurveyTo(survey, language));
   }
 
-  async getSurveysByOrganization(organizationId: number) {
-    return this.surveyRepository.find({
+  async getSurveysByOrganization(organizationId: number, language: string = 'ru') {
+    const surveys = await this.surveyRepository.find({
       where: { organization: { id: organizationId } },
-      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization'],
+      relations: ['vote', 'vote.user', 'vote.option', 'options', 'region', 'organization', 'type'],
       order: { createdAt: 'DESC' },
     });
+
+    return surveys.map(survey => LocalizeMapper.mapSurveyTo(survey, language));
   }
 
   async update(id: number, updateData: Partial<SurveyEntity>) {

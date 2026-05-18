@@ -12,7 +12,7 @@ import { OrganizationEntity } from './organization.entity';
 import { RegionEntity } from './region.entity';
 import { VoteEntity } from './vote.entity';
 import { OptionEntity } from './option.entity';
-import { SurveyType } from 'src/modules/survey/enums/survey-type.enum';
+import { SurveyTypeEntity } from './survey-type.entity';
 import { SurveyExecutionStatus } from 'src/modules/survey/enums/survey-execution.enum';
 
 @Entity('survey')
@@ -36,6 +36,18 @@ export class SurveyEntity {
   @Column({ type: 'text' })
   subTitle: string;
 
+  @ApiPropertyOptional()
+  @Column({ type: 'varchar', nullable: true })
+  titleKz: string;
+
+  @ApiPropertyOptional()
+  @Column({ type: 'text', nullable: true })
+  descriptionKz: string;
+
+  @ApiPropertyOptional()
+  @Column({ type: 'text', nullable: true })
+  subTitleKz: string;
+
   @ApiProperty()
   @ManyToOne(() => OrganizationEntity, (org) => org.survey)
   @JoinColumn({ name: 'organization_id' })
@@ -49,9 +61,10 @@ export class SurveyEntity {
   @OneToMany(() => OptionEntity, (option) => option.survey)
   options: OptionEntity[];
 
-  @ApiProperty({ enum: SurveyType })
-  @Column({ type: 'enum', enum: SurveyType })
-  type: SurveyType;
+  @ApiProperty({ type: () => SurveyTypeEntity })
+  @ManyToOne(() => SurveyTypeEntity, (type) => type.surveys)
+  @JoinColumn({ name: 'type_id' })
+  type: SurveyTypeEntity;
 
   @ApiPropertyOptional({ type: () => RegionEntity })
   @ManyToOne(() => RegionEntity, { nullable: true, onDelete: 'SET NULL' })
